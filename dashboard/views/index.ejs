@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= botName %> — Mes serveurs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Mes serveurs</h1>
+      <p>Sélectionne un serveur pour le configurer</p>
+    </div>
+    <div class="guilds-grid">
+      <% if (guilds.length === 0) { %>
+        <div class="empty-state">
+          <div class="empty-icon">🔮</div>
+          <h3>Aucun serveur en commun</h3>
+          <p>Thessara n'est active sur aucun de tes serveurs.</p>
+          <a href="https://discord.com/oauth2/authorize?client_id=1515438520280420443&permissions=8&scope=bot%20applications.commands" target="_blank" class="btn-primary">Inviter Thessara</a>
+        </div>
+      <% } else { %>
+        <% guilds.forEach(guild => { %>
+          <a href="/guild/<%= guild.id %>" class="guild-card">
+            <% if (guild.icon) { %>
+              <img src="https://cdn.discordapp.com/icons/<%= guild.id %>/<%= guild.icon %>.png" alt="<%= guild.name %>" class="guild-icon">
+            <% } else { %>
+              <div class="guild-icon-placeholder"><%= guild.name.charAt(0).toUpperCase() %></div>
+            <% } %>
+            <div class="guild-info">
+              <h3><%= guild.name %></h3>
+              <span class="guild-badge">Configurer →</span>
+            </div>
+          </a>
+        <% }) %>
+      <% } %>
+    </div>
+  </main>
+</body>
+</html>

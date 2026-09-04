@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= botName %> — <%= guild.name %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="sidebar-guild">
+        <% if (guild.icon) { %>
+          <img src="https://cdn.discordapp.com/icons/<%= guild.id %>/<%= guild.icon %>.png" alt="<%= guild.name %>" class="sidebar-guild-icon">
+        <% } else { %>
+          <div class="sidebar-guild-icon-placeholder"><%= guild.name.charAt(0) %></div>
+        <% } %>
+        <div>
+          <div class="sidebar-guild-name"><%= guild.name %></div>
+          <div class="sidebar-guild-members"><%= guild.memberCount %> membres</div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Configuration</div>
+        <a href="#bienvenue" class="nav-item active" onclick="showSection('bienvenue', this)"><span class="nav-icon">👋</span> Bienvenue</a>
+        <a href="#tickets" class="nav-item" onclick="showSection('tickets', this)"><span class="nav-icon">🎫</span> Tickets</a>
+        <a href="#logs" class="nav-item" onclick="showSection('logs', this)"><span class="nav-icon">📋</span> Logs</a>
+        <a href="#moderation" class="nav-item" onclick="showSection('moderation', this)"><span class="nav-icon">⚔️</span> Modération</a>
+      </nav>
+    </aside>
+    <main class="dashboard-main">
+
+      <section id="section-bienvenue" class="config-section active">
+        <div class="section-header">
+          <div class="section-icon">👋</div>
+          <div><h2>Bienvenue</h2><p>Configure le message et le salon d'accueil des nouveaux membres</p></div>
+        </div>
+        <div class="config-card">
+          <div class="config-group">
+            <label>Salon de bienvenue</label>
+            <p class="config-desc">Le message de bienvenue sera envoyé dans ce salon.</p>
+            <select id="welcome-channel" class="select-input">
+              <option value="">— Sélectionner un salon —</option>
+              <% channels.forEach(c => { %><option value="<%= c.id %>" <%= config.channels && config.channels.welcome === c.id ? 'selected' : '' %>>#<%= c.name %></option><% }) %>
+            </select>
+          </div>
+          <div class="config-group">
+            <label>Rôle attribué automatiquement</label>
+            <p class="config-desc">Ce rôle sera donné à chaque nouveau membre qui rejoint.</p>
+            <select id="welcome-role" class="select-input">
+              <option value="">— Aucun rôle automatique —</option>
+              <% roles.forEach(r => { %><option value="<%= r.id %>" <%= config.roles && config.roles.member === r.id ? 'selected' : '' %>><%= r.name %></option><% }) %>
+            </select>
+          </div>
+          <div class="config-actions">
+            <button class="btn-primary" onclick="saveWelcome('<%= guild.id %>')">Sauvegarder</button>
+            <span class="save-status" id="welcome-status"></span>
+          </div>
+        </div>
+        <div class="config-card preview-card">
+          <h3>Aperçu du message de bienvenue</h3>
+          <div class="discord-preview">
+            <div class="discord-msg">
+              <div class="discord-avatar">🔮</div>
+              <div class="discord-content">
+                <div class="discord-author">Thessara <span class="discord-bot-badge">BOT</span></div>
+                <div class="discord-embed" style="border-left: 4px solid #5865F2;">
+                  <div class="discord-embed-title">✨ Un nouveau voyageur rejoint la guilde !</div>
+                  <div class="discord-embed-desc">Bienvenue <strong>@NouveauMembre</strong> !<br><br><em>Thessara lève les yeux de ses parchemins...</em><br><br>📜 Lis bien les règles et présente-toi !</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="section-tickets" class="config-section">
+        <div class="section-header">
+          <div class="section-icon">🎫</div>
+          <div><h2>Tickets</h2><p>Configure le système de support par tickets</p></div>
+        </div>
+        <div class="config-card">
+          <div class="config-group">
+            <label>Salon du panel tickets</label>
+            <p class="config-desc">Le bouton "Ouvrir un ticket" sera posté dans ce salon.</p>
+            <select id="ticket-channel" class="select-input">
+              <option value="">— Sélectionner un salon —</option>
+              <% channels.forEach(c => { %><option value="<%= c.id %>" <%= config.channels && config.channels.tickets === c.id ? 'selected' : '' %>>#<%= c.name %></option><% }) %>
+            </select>
+          </div>
+          <div class="config-group">
+            <label>Rôle Staff (accès aux tickets)</label>
+            <p class="config-desc">Ce rôle aura automatiquement accès à tous les tickets ouverts.</p>
+            <select id="ticket-staff-role" class="select-input">
+              <option value="">— Sélectionner un rôle —</option>
+              <% roles.forEach(r => { %><option value="<%= r.id %>" <%= config.roles && config.roles.staff === r.id ? 'selected' : '' %>><%= r.name %></option><% }) %>
+            </select>
+          </div>
+          <div class="config-actions">
+            <button class="btn-primary" onclick="saveTickets('<%= guild.id %>')">Sauvegarder</button>
+            <span class="save-status" id="tickets-status"></span>
+          </div>
+        </div>
+        <div class="config-card info-card">
+          <h3>📌 Comment ça marche ?</h3>
+          <ol class="how-it-works">
+            <li>Configure le salon et le rôle staff ci-dessus</li>
+            <li>Utilise <code>/ticket panel</code> dans le salon choisi sur Discord</li>
+            <li>Les membres cliquent sur "Ouvrir un ticket"</li>
+            <li>Un salon privé est créé, visible uniquement par le membre et le Staff</li>
+            <li>Le Staff ferme le ticket avec le bouton "Fermer"</li>
+          </ol>
+        </div>
+      </section>
+
+      <section id="section-logs" class="config-section">
+        <div class="section-header">
+          <div class="section-icon">📋</div>
+          <div><h2>Logs</h2><p>Trace toutes les actions importantes du serveur</p></div>
+        </div>
+        <div class="config-card">
+          <div class="config-group">
+            <label>Salon des logs</label>
+            <p class="config-desc">Les arrivées, départs et actions de modération seront envoyés ici.</p>
+            <select id="logs-channel" class="select-input">
+              <option value="">— Sélectionner un salon —</option>
+              <% channels.forEach(c => { %><option value="<%= c.id %>" <%= config.channels && config.channels.logs === c.id ? 'selected' : '' %>>#<%= c.name %></option><% }) %>
+            </select>
+          </div>
+          <div class="config-actions">
+            <button class="btn-primary" onclick="saveLogs('<%= guild.id %>')">Sauvegarder</button>
+            <span class="save-status" id="logs-status"></span>
+          </div>
+        </div>
+      </section>
+
+      <section id="section-moderation" class="config-section">
+        <div class="section-header">
+          <div class="section-icon">⚔️</div>
+          <div><h2>Modération</h2><p>Configure les permissions des commandes de modération</p></div>
+        </div>
+        <div class="config-card">
+          <div class="config-group">
+            <label>Rôle modérateur</label>
+            <p class="config-desc">Ce rôle aura accès aux commandes /ban, /kick, /mute, /clear.</p>
+            <select id="mod-staff-role" class="select-input">
+              <option value="">— Sélectionner un rôle —</option>
+              <% roles.forEach(r => { %><option value="<%= r.id %>" <%= config.roles && config.roles.staff === r.id ? 'selected' : '' %>><%= r.name %></option><% }) %>
+            </select>
+          </div>
+          <div class="config-actions">
+            <button class="btn-primary" onclick="saveModeration('<%= guild.id %>')">Sauvegarder</button>
+            <span class="save-status" id="moderation-status"></span>
+          </div>
+        </div>
+        <div class="config-card">
+          <h3>Commandes disponibles</h3>
+          <div class="commands-list">
+            <div class="command-item"><code>/ban @membre [raison]</code><span>Bannir définitivement un membre</span></div>
+            <div class="command-item"><code>/kick @membre [raison]</code><span>Expulser un membre du serveur</span></div>
+            <div class="command-item"><code>/mute @membre [durée] [raison]</code><span>Réduire au silence (timeout)</span></div>
+            <div class="command-item"><code>/unmute @membre</code><span>Lever le silence d'un membre</span></div>
+            <div class="command-item"><code>/clear [nombre]</code><span>Supprimer des messages en masse</span></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+  <div id="toast" class="toast"></div>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
